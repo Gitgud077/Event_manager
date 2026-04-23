@@ -69,8 +69,8 @@
   </div>
 
   <script type="module">
-    import { login, signup } from './js/auth.js';
-    import { onAuthStateChange, handlePostLogin } from './js/role.js';
+    import { login, signup, onAuthStateChange } from './js/auth.js';
+    import { handlePostLogin } from './js/role.js';
 
     // Toggle between login and signup forms
     document.getElementById('showSignup').addEventListener('click', (e) => {
@@ -98,19 +98,25 @@
     // Handle login form submission
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Logging in...';
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       const result = await login(email, password);
       if (result.success) {
+        messageEl.textContent = 'Login successful! Redirecting...';
         handlePostLogin(result.user);
       } else {
-        document.getElementById('message').textContent = result.error;
+        messageEl.textContent = `Login failed: ${result.error}`;
+        console.error('Login failed:', result.error);
       }
     });
 
     // Handle signup form submission
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Creating account...';
       const name = document.getElementById('signupName').value;
       const email = document.getElementById('signupEmail').value;
       const password = document.getElementById('signupPassword').value;
@@ -119,9 +125,11 @@
       const availability = role === 'volunteer' ? document.getElementById('availability').value.split(',').map(a => a.trim()) : [];
       const result = await signup(email, password, name, role, skills, availability);
       if (result.success) {
+        messageEl.textContent = 'Account created! Redirecting...';
         handlePostLogin(result.user);
       } else {
-        document.getElementById('message').textContent = result.error;
+        messageEl.textContent = `Signup failed: ${result.error}`;
+        console.error('Signup failed:', result.error);
       }
     });
 

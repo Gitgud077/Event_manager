@@ -1,9 +1,9 @@
 // firebase.js - Firebase configuration and initialization
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js';
+import { getAuth, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
 
-// Firebase configuration (replace with your actual config)
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDIhgmXywH5F186bF671OgIGPx-5JXHX_Y",
   authDomain: "volunteerrecruit-35c22.firebaseapp.com",
@@ -15,7 +15,14 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log('Firebase app initialized:', app.name);
 
 // Initialize Firebase Authentication and Firestore
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+console.log('Auth and Firestore initialized');
+
+// Set persistence for auth
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Error setting persistence:', error);
+});

@@ -3,6 +3,17 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, on
 import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
 import { auth, db } from './firebase.js';
 
+// Login function
+export async function login(email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return { success: true, user: userCredential.user };
+  } catch (error) {
+    console.error('Login error:', error.code, error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 // Signup function
 export async function signup(email, password, name, role, skills = [], availability = []) {
   try {
@@ -22,16 +33,7 @@ export async function signup(email, password, name, role, skills = [], availabil
 
     return { success: true, user: user };
   } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-// Login function
-export async function login(email, password) {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { success: true, user: userCredential.user };
-  } catch (error) {
+    console.error('Signup error:', error.code, error.message);
     return { success: false, error: error.message };
   }
 }

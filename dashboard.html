@@ -16,7 +16,8 @@
   </div>
 
   <script type="module">
-    import { onAuthStateChange, handlePostLogin } from './js/role.js';
+    import { onAuthStateChange } from './js/auth.js';
+    import { handlePostLogin } from './js/role.js';
 
     // Check auth state and redirect
     onAuthStateChange((user) => {

@@ -1,8 +1,8 @@
 // app.js - Data fetching and UI rendering
-import { collection, getDocs, addDoc, query, where, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
+import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
 import { db } from './firebase.js';
 
-// Fetch volunteer data
+// Fetch volunteer data with assignment IDs
 export async function fetchVolunteerData(uid) {
   try {
     // Get user data
@@ -19,6 +19,7 @@ export async function fetchVolunteerData(uid) {
       const eventDoc = await getDoc(doc(db, 'events', assignment.eventId));
       if (eventDoc.exists()) {
         assignments.push({
+          id: assignmentDoc.id,
           ...assignment,
           event: eventDoc.data()
         });
@@ -201,12 +202,169 @@ export function renderManagerDashboard(data) {
 // Create new event
 export async function createEvent(eventData) {
   try {
-    await addDoc(collection(db, 'events'), {
+    const docRef = await addDoc(collection(db, 'events'), {
       ...eventData,
-      assignedVolunteers: []
+      assignedVolunteers: [],
+      createdAt: new Date().toISOString()
     });
+    console.log('Event created:', docRef.id);
+    return { success: true, eventId: docRef.id };
+  } catch (error) {
+    console.error('Error creating event:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Assign volunteer to event
+export async function assignVolunteerToEvent(volunteerId, eventId) {
+  try {
+    const eventDoc = doc(db, 'events', eventId);
+    const eventData = await getDoc(eventDoc);
+    const currentAssigned = eventData.data().assignedVolunteers || [];
+    
+    if (!currentAssigned.includes(volunteerId)) {
+      await updateDoc(eventDoc, {
+        assignedVolunteers: [...currentAssigned, volunteerId]
+      });
+
+      // Create assignment record
+      await addDoc(collection(db, 'assignments'), {
+        userId: volunteerId,
+        eventId: eventId,
+        status: 'assigned',
+        assignedAt: new Date().toISOString()
+      });
+    }
+    
     return { success: true };
   } catch (error) {
+    console.error('Error assigning volunteer:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Fetch events the volunteer has not yet joined
+export async function fetchAvailableEventsForVolunteer(uid) {
+  try {
+    const eventsSnapshot = await getDocs(collection(db, 'events'));
+    const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const assignmentsSnapshot = await getDocs(query(collection(db, 'assignments'), where('userId', '==', uid)));
+    const assignedEventIds = assignmentsSnapshot.docs.map(doc => doc.data().eventId);
+
+    return events.filter(event => !assignedEventIds.includes(event.id));
+  } catch (error) {
+    console.error('Error fetching available events:', error);
+    return [];
+  }
+}
+
+// Sign up the volunteer for an event
+export async function signUpForEvent(volunteerId, eventId) {
+  try {
+    const eventDoc = doc(db, 'events', eventId);
+    const eventSnapshot = await getDoc(eventDoc);
+    if (!eventSnapshot.exists()) {
+      throw new Error('Event not found');
+    }
+
+    const currentAssigned = eventSnapshot.data().assignedVolunteers || [];
+    if (!currentAssigned.includes(volunteerId)) {
+      await updateDoc(eventDoc, {
+        assignedVolunteers: [...currentAssigned, volunteerId]
+      });
+    }
+
+    const alreadyAssignedQuery = query(
+      collection(db, 'assignments'),
+      where('userId', '==', volunteerId),
+      where('eventId', '==', eventId)
+    );
+    const alreadyAssignedSnapshot = await getDocs(alreadyAssignedQuery);
+
+    if (alreadyAssignedSnapshot.empty) {
+      await addDoc(collection(db, 'assignments'), {
+        userId: volunteerId,
+        eventId: eventId,
+        status: 'pending',
+        assignedAt: new Date().toISOString()
+      });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error signing up for event:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get volunteers matching event skills
+export async function getVolunteersForEvent(eventId) {
+  try {
+    const eventDoc = await getDoc(doc(db, 'events', eventId));
+    const event = eventDoc.data();
+    const requiredSkills = event.requiredSkills;
+
+    // Get all volunteers
+    const volunteersQuery = query(collection(db, 'users'), where('role', '==', 'volunteer'));
+    const volunteersSnapshot = await getDocs(volunteersQuery);
+    
+    const matchedVolunteers = [];
+    volunteersSnapshot.forEach(doc => {
+      const volunteer = doc.data();
+      // Check if volunteer has at least one required skill
+      const hasSkill = volunteer.skills.some(skill => requiredSkills.includes(skill));
+      if (hasSkill && !event.assignedVolunteers.includes(volunteer.uid)) {
+        matchedVolunteers.push({ id: doc.id, ...volunteer, matchedSkills: volunteer.skills.filter(s => requiredSkills.includes(s)) });
+      }
+    });
+
+    return matchedVolunteers;
+  } catch (error) {
+    console.error('Error getting matched volunteers:', error);
+    return [];
+  }
+}
+
+// Auto-assign volunteers to event based on skills
+export async function autoAssignVolunteers(eventId) {
+  try {
+    const eventDoc = await getDoc(doc(db, 'events', eventId));
+    const event = eventDoc.data();
+    const matchedVolunteers = await getVolunteersForEvent(eventId);
+
+    const neededSpots = event.volunteersNeeded - event.assignedVolunteers.length;
+    let assigned = 0;
+
+    // Sort by reliability score (highest first)
+    matchedVolunteers.sort((a, b) => b.reliabilityScore - a.reliabilityScore);
+
+    for (let i = 0; i < matchedVolunteers.length && assigned < neededSpots; i++) {
+      const result = await assignVolunteerToEvent(matchedVolunteers[i].id, eventId);
+      if (result.success) {
+        assigned++;
+      }
+    }
+
+    return { success: true, assignedCount: assigned };
+  } catch (error) {
+    console.error('Error auto-assigning volunteers:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Update assignment status
+export async function updateEventStatus(assignmentId, newStatus) {
+  try {
+    const assignmentDoc = doc(db, 'assignments', assignmentId);
+    await updateDoc(assignmentDoc, {
+      status: newStatus,
+      updatedAt: new Date().toISOString()
+    });
+    console.log('Assignment status updated to:', newStatus);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating assignment status:', error);
     return { success: false, error: error.message };
   }
 }

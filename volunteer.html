@@ -14,45 +14,102 @@
   </header>
 
   <div class="container mx-auto p-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <!-- Top Stats Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <!-- Personal Info Card -->
       <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Personal Info</h2>
-        <p id="userName" class="text-gray-700"></p>
-        <p id="userEmail" class="text-gray-700"></p>
-        <p id="userSkills" class="text-gray-700"></p>
-        <p id="userAvailability" class="text-gray-700"></p>
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-2">Name</h3>
+        <p id="userName" class="text-xl font-bold text-gray-800"></p>
+        <p id="userEmail" class="text-sm text-gray-600"></p>
       </div>
 
       <!-- Reliability Score Card -->
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Reliability Score</h2>
-        <div class="text-3xl font-bold text-green-600" id="reliabilityScore">0</div>
-        <canvas id="reliabilityChart" width="200" height="200"></canvas>
+      <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow-md border border-green-200">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-2">Reliability Score</h3>
+        <div class="text-4xl font-bold text-green-600" id="reliabilityScore">0</div>
+        <p class="text-xs text-gray-600 mt-1">Out of 100</p>
       </div>
 
-      <!-- Assigned Events Card -->
-      <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-1">
-        <h2 class="text-xl font-semibold mb-4">Assigned Events</h2>
-        <ul id="assignedEvents" class="space-y-2">
-          <!-- Events will be populated here -->
-        </ul>
+      <!-- Events Count -->
+      <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow-md border border-blue-200">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-2">Assigned Events</h3>
+        <div class="text-4xl font-bold text-blue-600" id="eventCount">0</div>
+        <p class="text-xs text-gray-600 mt-1">Active assignments</p>
+      </div>
+
+      <!-- Completed Events -->
+      <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg shadow-md border border-purple-200">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-2">Completed</h3>
+        <div class="text-4xl font-bold text-purple-600" id="completedCount">0</div>
+        <p class="text-xs text-gray-600 mt-1">Finished events</p>
+      </div>
+    </div>
+
+    <!-- Skills and Availability -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Skills Card -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Your Skills</h2>
+        <div id="skillsTags" class="flex flex-wrap gap-2">
+          <!-- Skills will be populated here -->
+        </div>
+      </div>
+
+      <!-- Availability Card -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Availability</h2>
+        <div id="availabilityTags" class="flex flex-wrap gap-2">
+          <!-- Availability will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Opportunities Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Available Opportunities</h2>
+        <span id="availableCount" class="text-sm text-gray-500">0 opportunities</span>
+      </div>
+      <div id="availableEvents" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Available events will be populated here -->
+      </div>
+    </div>
+
+    <!-- Assigned Events Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4">Your Events</h2>
+      <div class="mb-4 flex gap-2">
+        <button class="filter-btn px-4 py-2 rounded text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600" data-status="all">All</button>
+        <button class="filter-btn px-4 py-2 rounded text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300" data-status="assigned">Assigned</button>
+        <button class="filter-btn px-4 py-2 rounded text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300" data-status="completed">Completed</button>
+        <button class="filter-btn px-4 py-2 rounded text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300" data-status="pending">Pending</button>
+      </div>
+      <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Events will be populated here -->
       </div>
     </div>
 
     <!-- Charts Section -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-      <h2 class="text-xl font-semibold mb-4">Skill Distribution</h2>
-      <canvas id="skillsChart"></canvas>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Event Status Distribution</h2>
+        <canvas id="statusChart"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Events Timeline</h2>
+        <canvas id="timelineChart"></canvas>
+      </div>
     </div>
   </div>
 
   <script type="module">
-    import { logout } from './js/auth.js';
-    import { onAuthStateChange } from './js/role.js';
-    import { fetchVolunteerData, renderVolunteerDashboard } from './js/app.js';
+    import { logout, onAuthStateChange } from './js/auth.js';
+    import { fetchVolunteerData, fetchAvailableEventsForVolunteer, signUpForEvent, updateEventStatus } from './js/app.js';
 
     let currentUser = null;
+    let currentAssignments = null;
+    let currentFilter = 'all';
+    let currentAvailableEvents = [];
 
     // Logout functionality
     document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -64,12 +121,273 @@
       }
     });
 
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('bg-blue-500', 'text-white');
+          b.classList.add('bg-gray-200', 'text-gray-700');
+        });
+        e.target.classList.add('bg-blue-500', 'text-white');
+        e.target.classList.remove('bg-gray-200', 'text-gray-700');
+        
+        currentFilter = e.target.dataset.status;
+        displayFilteredEvents();
+      });
+    });
+
+    // Display filtered events
+    function displayFilteredEvents() {
+      const container = document.getElementById('eventsContainer');
+      container.innerHTML = '';
+
+      if (!currentAssignments) return;
+
+      const filtered = currentFilter === 'all' 
+        ? currentAssignments 
+        : currentAssignments.filter(a => a.status === currentFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 col-span-2">No events found.</p>';
+        return;
+      }
+
+      filtered.forEach(assignment => {
+        const event = assignment.event;
+        const eventDate = new Date(event.time);
+        const isPast = eventDate < new Date();
+        
+        let statusColor = 'bg-yellow-50 border-yellow-200';
+        let statusBg = 'bg-yellow-100 text-yellow-800';
+        
+        if (assignment.status === 'completed') {
+          statusColor = 'bg-green-50 border-green-200';
+          statusBg = 'bg-green-100 text-green-800';
+        } else if (assignment.status === 'pending') {
+          statusColor = 'bg-gray-50 border-gray-200';
+          statusBg = 'bg-gray-100 text-gray-800';
+        }
+
+        const eventDiv = document.createElement('div');
+        eventDiv.className = `${statusColor} p-4 border rounded-lg`;
+        eventDiv.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="font-semibold text-lg">${event.title}</h3>
+            <span class="${statusBg} text-xs font-semibold px-2 py-1 rounded">${assignment.status.toUpperCase()}</span>
+          </div>
+          <p class="text-sm text-gray-600 mb-1">📍 ${event.location}</p>
+          <p class="text-sm text-gray-600 mb-1">🕐 ${eventDate.toLocaleDateString()} ${eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+          <p class="text-sm text-gray-600 mb-3">💼 Skills: ${event.requiredSkills.join(', ')}</p>
+          <div class="flex gap-2">
+            ${assignment.status === 'assigned' ? `
+              <button class="mark-complete-btn bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600" data-assignment-id="${assignment.id}">Mark Complete</button>
+              <button class="mark-pending-btn bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600" data-assignment-id="${assignment.id}">Mark Pending</button>
+            ` : assignment.status === 'pending' ? `
+              <button class="mark-assigned-btn bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600" data-assignment-id="${assignment.id}">Confirm Assignment</button>
+            ` : `
+              <span class="text-green-600 font-semibold flex items-center gap-1">✓ Event Completed</span>
+            `}
+          </div>
+        `;
+        container.appendChild(eventDiv);
+      });
+    }
+
+    // Enhanced render function
+    async function renderVolunteerDashboardEnhanced(data, availableEvents) {
+      if (!data) return;
+
+      const { user, assignments } = data;
+      currentAssignments = assignments;
+      currentAvailableEvents = availableEvents || [];
+
+      // Personal info
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userEmail').textContent = user.email;
+      
+      // Reliability score
+      document.getElementById('reliabilityScore').textContent = user.reliabilityScore;
+
+      // Event counters
+      document.getElementById('eventCount').textContent = assignments.filter(a => a.status !== 'completed').length;
+      document.getElementById('completedCount').textContent = assignments.filter(a => a.status === 'completed').length;
+
+      // Skills tags
+      const skillsContainer = document.getElementById('skillsTags');
+      skillsContainer.innerHTML = '';
+      user.skills.forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold';
+        tag.textContent = skill;
+        skillsContainer.appendChild(tag);
+      });
+
+      // Availability tags
+      const availContainer = document.getElementById('availabilityTags');
+      availContainer.innerHTML = '';
+      user.availability.forEach(avail => {
+        const tag = document.createElement('span');
+        tag.className = 'bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold';
+        tag.textContent = avail;
+        availContainer.appendChild(tag);
+      });
+
+      // Display available events
+      renderAvailableEvents(availableEvents || [], user.skills);
+
+      // Display assigned events
+      displayFilteredEvents();
+
+      // Status distribution chart
+      const statusCounts = {
+        assigned: assignments.filter(a => a.status === 'assigned').length,
+        pending: assignments.filter(a => a.status === 'pending').length,
+        completed: assignments.filter(a => a.status === 'completed').length
+      };
+
+      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Assigned', 'Pending', 'Completed'],
+          datasets: [{
+            data: [statusCounts.assigned, statusCounts.pending, statusCounts.completed],
+            backgroundColor: ['#3b82f6', '#ef4444', '#10b981']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+      // Timeline chart - upcoming events
+      const sortedEvents = assignments
+        .sort((a, b) => new Date(a.event.time) - new Date(b.event.time))
+        .slice(0, 5);
+
+      const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+      new Chart(timelineCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedEvents.map(a => a.event.title.substring(0, 10)),
+          datasets: [{
+            label: 'Days Until Event',
+            data: sortedEvents.map(a => {
+              const days = Math.ceil((new Date(a.event.time) - new Date()) / (1000 * 60 * 60 * 24));
+              return Math.max(days, 0);
+            }),
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          scales: {
+            x: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Handle status change buttons
+    document.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('mark-complete-btn')) {
+        const assignmentId = e.target.dataset.assignmentId;
+        const result = await updateEventStatus(assignmentId, 'completed');
+        if (result.success) {
+          alert('Event marked as completed!');
+          loadVolunteerData();
+        } else {
+          alert('Failed to update status: ' + result.error);
+        }
+      }
+
+      if (e.target.classList.contains('mark-pending-btn')) {
+        const assignmentId = e.target.dataset.assignmentId;
+        const result = await updateEventStatus(assignmentId, 'pending');
+        if (result.success) {
+          alert('Event marked as pending!');
+          loadVolunteerData();
+        } else {
+          alert('Failed to update status: ' + result.error);
+        }
+      }
+
+      if (e.target.classList.contains('mark-assigned-btn')) {
+        const assignmentId = e.target.dataset.assignmentId;
+        const result = await updateEventStatus(assignmentId, 'assigned');
+        if (result.success) {
+          alert('Assignment confirmed!');
+          loadVolunteerData();
+        } else {
+          alert('Failed to update status: ' + result.error);
+        }
+      }
+
+      if (e.target.classList.contains('sign-up-btn')) {
+        const eventId = e.target.dataset.eventId;
+        const result = await signUpForEvent(currentUser.uid, eventId);
+        if (result.success) {
+          alert('You have joined the event!');
+          loadVolunteerData();
+        } else {
+          alert('Signup failed: ' + result.error);
+        }
+      }
+    });
+
+    function renderAvailableEvents(availableEvents, userSkills) {
+      const container = document.getElementById('availableEvents');
+      container.innerHTML = '';
+      document.getElementById('availableCount').textContent = `${availableEvents.length} opportunities`;
+
+      if (availableEvents.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">No open volunteer opportunities found right now.</p>';
+        return;
+      }
+
+      availableEvents.forEach(event => {
+        const matchedSkills = event.requiredSkills.filter(skill => userSkills.includes(skill));
+        const eventDate = new Date(event.time);
+
+        const card = document.createElement('div');
+        card.className = 'border rounded-lg p-4 bg-slate-50 shadow-sm';
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-semibold text-lg">${event.title}</h3>
+              <p class="text-sm text-gray-500">${eventDate.toLocaleDateString()} • ${event.location}</p>
+            </div>
+            <span class="text-xs font-semibold text-white px-2 py-1 rounded ${matchedSkills.length > 0 ? 'bg-green-600' : 'bg-gray-500'}">
+              ${matchedSkills.length > 0 ? 'Good match' : 'Open'}
+            </span>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Needed: ${event.volunteersNeeded} volunteers</p>
+          <p class="text-sm text-gray-600 mb-3">Skills: ${event.requiredSkills.join(', ')}</p>
+          <button class="sign-up-btn bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm" data-event-id="${event.id}">Join this event</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Load volunteer data
+    async function loadVolunteerData() {
+      const data = await fetchVolunteerData(currentUser.uid);
+      const availableEvents = await fetchAvailableEventsForVolunteer(currentUser.uid);
+      renderVolunteerDashboardEnhanced(data, availableEvents);
+    }
+
     // Check auth and load data
     onAuthStateChange(async (user) => {
       if (user) {
         currentUser = user;
-        const data = await fetchVolunteerData(user.uid);
-        renderVolunteerDashboard(data);
+        loadVolunteerData();
       } else {
         window.location.href = 'index.html';
       }
