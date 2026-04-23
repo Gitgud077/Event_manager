@@ -1,19 +1,79 @@
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Volunteer Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+  </header>
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDIhgmXywH5F186bF671OgIGPx-5JXHX_Y",
-    authDomain: "volunteerrecruit-35c22.firebaseapp.com",
-    projectId: "volunteerrecruit-35c22",
-    storageBucket: "volunteerrecruit-35c22.firebasestorage.app",
-    messagingSenderId: "395726784849",
-    appId: "1:395726784849:web:bd538fc59142feac7eab70"
-  };
+  <div class="container mx-auto p-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <!-- Personal Info Card -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Personal Info</h2>
+        <p id="userName" class="text-gray-700"></p>
+        <p id="userEmail" class="text-gray-700"></p>
+        <p id="userSkills" class="text-gray-700"></p>
+        <p id="userAvailability" class="text-gray-700"></p>
+      </div>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
+      <!-- Reliability Score Card -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Reliability Score</h2>
+        <div class="text-3xl font-bold text-green-600" id="reliabilityScore">0</div>
+        <canvas id="reliabilityChart" width="200" height="200"></canvas>
+      </div>
+
+      <!-- Assigned Events Card -->
+      <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-1">
+        <h2 class="text-xl font-semibold mb-4">Assigned Events</h2>
+        <ul id="assignedEvents" class="space-y-2">
+          <!-- Events will be populated here -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4">Skill Distribution</h2>
+      <canvas id="skillsChart"></canvas>
+    </div>
+  </div>
+
+  <script type="module">
+    import { logout } from './js/auth.js';
+    import { onAuthStateChange } from './js/role.js';
+    import { fetchVolunteerData, renderVolunteerDashboard } from './js/app.js';
+
+    let currentUser = null;
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      const result = await logout();
+      if (result.success) {
+        window.location.href = 'index.html';
+      } else {
+        alert('Logout failed: ' + result.error);
+      }
+    });
+
+    // Check auth and load data
+    onAuthStateChange(async (user) => {
+      if (user) {
+        currentUser = user;
+        const data = await fetchVolunteerData(user.uid);
+        renderVolunteerDashboard(data);
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

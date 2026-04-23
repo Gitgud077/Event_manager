@@ -1,19 +1,127 @@
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Manager Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Event Manager Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+  </header>
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDIhgmXywH5F186bF671OgIGPx-5JXHX_Y",
-    authDomain: "volunteerrecruit-35c22.firebaseapp.com",
-    projectId: "volunteerrecruit-35c22",
-    storageBucket: "volunteerrecruit-35c22.firebasestorage.app",
-    messagingSenderId: "395726784849",
-    appId: "1:395726784849:web:bd538fc59142feac7eab70"
-  };
+  <div class="container mx-auto p-4">
+    <!-- Create Event Form -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4">Create New Event</h2>
+      <form id="createEventForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="eventTitle" class="block text-gray-700">Title</label>
+          <input type="text" id="eventTitle" class="w-full px-3 py-2 border rounded-lg" required>
+        </div>
+        <div>
+          <label for="requiredSkills" class="block text-gray-700">Required Skills (comma-separated)</label>
+          <input type="text" id="requiredSkills" class="w-full px-3 py-2 border rounded-lg" required>
+        </div>
+        <div>
+          <label for="volunteersNeeded" class="block text-gray-700">Volunteers Needed</label>
+          <input type="number" id="volunteersNeeded" class="w-full px-3 py-2 border rounded-lg" required>
+        </div>
+        <div>
+          <label for="eventTime" class="block text-gray-700">Time</label>
+          <input type="datetime-local" id="eventTime" class="w-full px-3 py-2 border rounded-lg" required>
+        </div>
+        <div class="md:col-span-2">
+          <label for="eventLocation" class="block text-gray-700">Location</label>
+          <input type="text" id="eventLocation" class="w-full px-3 py-2 border rounded-lg" required>
+        </div>
+        <div class="md:col-span-2">
+          <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Create Event</button>
+        </div>
+      </form>
+    </div>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Events List -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Events</h2>
+        <ul id="eventsList" class="space-y-4">
+          <!-- Events will be populated here -->
+        </ul>
+      </div>
+
+      <!-- Volunteers List -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Volunteers</h2>
+        <ul id="volunteersList" class="space-y-2">
+          <!-- Volunteers will be populated here -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Volunteers per Event</h2>
+        <canvas id="volunteersPerEventChart"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Skill Distribution</h2>
+        <canvas id="skillDistributionChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { logout } from './js/auth.js';
+    import { onAuthStateChange } from './js/role.js';
+    import { fetchManagerData, renderManagerDashboard, createEvent } from './js/app.js';
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      const result = await logout();
+      if (result.success) {
+        window.location.href = 'index.html';
+      } else {
+        alert('Logout failed: ' + result.error);
+      }
+    });
+
+    // Create event form submission
+    document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('eventTitle').value;
+      const requiredSkills = document.getElementById('requiredSkills').value.split(',').map(s => s.trim());
+      const volunteersNeeded = parseInt(document.getElementById('volunteersNeeded').value);
+      const time = document.getElementById('eventTime').value;
+      const location = document.getElementById('eventLocation').value;
+      const result = await createEvent({ title, requiredSkills, volunteersNeeded, time, location });
+      if (result.success) {
+        alert('Event created successfully!');
+        // Reload data
+        loadManagerData();
+      } else {
+        alert('Failed to create event: ' + result.error);
+      }
+    });
+
+    // Load manager data
+    async function loadManagerData() {
+      const data = await fetchManagerData();
+      renderManagerDashboard(data);
+    }
+
+    // Check auth and load data
+    onAuthStateChange((user) => {
+      if (user) {
+        loadManagerData();
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
