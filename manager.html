@@ -4,72 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Manager Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/manager.css">
 </head>
 <body class="bg-gray-100">
-  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold">Event Manager Dashboard</h1>
-    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+  <header class="header">
+    <h1>Event Manager Dashboard</h1>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
   </header>
 
-  <div class="container mx-auto p-4">
+  <div class="container">
     <!-- Create Event Form -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-      <h2 class="text-xl font-semibold mb-4">Create New Event</h2>
-      <form id="createEventForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label for="eventTitle" class="block text-gray-700">Title</label>
-          <input type="text" id="eventTitle" class="w-full px-3 py-2 border rounded-lg" required>
+    <div class="card">
+      <h2>Create New Event</h2>
+      <form id="createEventForm" class="form-grid">
+        <div class="form-group">
+          <label for="eventTitle">Title</label>
+          <input type="text" id="eventTitle" required>
         </div>
-        <div>
-          <label for="requiredSkills" class="block text-gray-700">Required Skills (comma-separated)</label>
-          <input type="text" id="requiredSkills" class="w-full px-3 py-2 border rounded-lg" required>
+        <div class="form-group">
+          <label for="requiredSkills">Required Skills (comma-separated)</label>
+          <input type="text" id="requiredSkills" required>
         </div>
-        <div>
-          <label for="volunteersNeeded" class="block text-gray-700">Volunteers Needed</label>
-          <input type="number" id="volunteersNeeded" class="w-full px-3 py-2 border rounded-lg" required>
+        <div class="form-group">
+          <label for="volunteersNeeded">Volunteers Needed</label>
+          <input type="number" id="volunteersNeeded" required>
         </div>
-        <div>
-          <label for="eventTime" class="block text-gray-700">Time</label>
-          <input type="datetime-local" id="eventTime" class="w-full px-3 py-2 border rounded-lg" required>
+        <div class="form-group">
+          <label for="eventTime">Time</label>
+          <input type="datetime-local" id="eventTime" required>
         </div>
-        <div class="md:col-span-2">
-          <label for="eventLocation" class="block text-gray-700">Location</label>
-          <input type="text" id="eventLocation" class="w-full px-3 py-2 border rounded-lg" required>
+        <div class="form-group full-width">
+          <label for="eventLocation">Location</label>
+          <input type="text" id="eventLocation" required>
         </div>
-        <div class="md:col-span-2">
-          <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Create Event</button>
+        <div class="form-group full-width">
+          <button type="submit" class="submit-btn">Create Event</button>
         </div>
       </form>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <div class="dashboard-grid">
       <!-- Events List -->
-      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-        <h2 class="text-xl font-semibold mb-4">Events</h2>
-        <div id="eventsList" class="space-y-4">
+      <div class="card events-card">
+        <h2>Events</h2>
+        <div id="eventsList" class="events-list">
           <!-- Events will be populated here -->
         </div>
       </div>
 
       <!-- Volunteers List -->
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Volunteers ({count})</h2>
-        <div id="volunteersList" class="space-y-2 max-h-96 overflow-y-auto">
+      <div class="card volunteers-card">
+        <h2 class="card-title">Volunteers (<span id="volunteerCount">0</span>)</h2>
+        <div id="volunteersList" class="volunteers-list">
           <!-- Volunteers will be populated here -->
         </div>
       </div>
     </div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Volunteers per Event</h2>
+    <div class="charts-grid">
+      <div class="card">
+        <h2>Volunteers per Event</h2>
         <canvas id="volunteersPerEventChart"></canvas>
       </div>
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Skill Distribution</h2>
+      <div class="card">
+        <h2>Skill Distribution</h2>
         <canvas id="skillDistributionChart"></canvas>
       </div>
     </div>
@@ -123,24 +123,24 @@
       for (const event of events) {
         const understaffed = event.assignedVolunteers.length < event.volunteersNeeded;
         const eventDiv = document.createElement('div');
-        eventDiv.className = `p-4 border rounded ${understaffed ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-300'}`;
+        eventDiv.className = `event-card ${understaffed ? 'understaffed' : 'staffed'}`;
         
         const statusText = understaffed ? '⚠️ UNDERSTAFFED' : '✓ STAFFED';
         
         eventDiv.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <h3 class="font-semibold text-lg">${event.title}</h3>
-            <span class="text-sm font-bold ${understaffed ? 'text-red-600' : 'text-green-600'}">${statusText}</span>
+          <div class="event-header">
+            <h3 class="event-title">${event.title}</h3>
+            <span class="status-badge ${understaffed ? 'understaffed' : 'staffed'}">${statusText}</span>
           </div>
-          <p class="text-sm text-gray-600">Location: ${event.location}</p>
-          <p class="text-sm text-gray-600">Time: ${new Date(event.time).toLocaleString()}</p>
-          <p class="text-sm text-gray-600">Volunteers: <strong>${event.assignedVolunteers.length}/${event.volunteersNeeded}</strong></p>
-          <p class="text-sm text-gray-600">Skills: ${event.requiredSkills.join(', ')}</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <button class="auto-assign-btn bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600" data-event-id="${event.id}">
+          <p class="event-detail">Location: ${event.location}</p>
+          <p class="event-detail">Time: ${new Date(event.time).toLocaleString()}</p>
+          <p class="event-detail">Volunteers: <strong>${event.assignedVolunteers.length}/${event.volunteersNeeded}</strong></p>
+          <p class="event-detail">Skills: ${event.requiredSkills.join(', ')}</p>
+          <div class="event-actions">
+            <button class="auto-assign-btn" data-event-id="${event.id}">
               Auto-Assign
             </button>
-            <button class="assign-volunteer-btn bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600" data-event-id="${event.id}">
+            <button class="assign-volunteer-btn" data-event-id="${event.id}">
               Assign Volunteer
             </button>
           </div>
@@ -149,19 +149,20 @@
         eventsList.appendChild(eventDiv);
       }
 
+      // Update volunteer count
+      document.getElementById('volunteerCount').textContent = volunteers.length;
+
       // Volunteers list
       const volunteersList = document.getElementById('volunteersList');
       volunteersList.innerHTML = '';
-      const heading = volunteersList.previousElementSibling;
-      heading.textContent = `Volunteers (${volunteers.length})`;
       
       volunteers.forEach(volunteer => {
         const div = document.createElement('div');
-        div.className = 'p-3 bg-gray-50 rounded border border-gray-200';
+        div.className = 'volunteer-item';
         div.innerHTML = `
-          <p class="font-semibold text-sm">${volunteer.name}</p>
-          <p class="text-xs text-gray-600">Skills: ${volunteer.skills.join(', ')}</p>
-          <p class="text-xs text-gray-600">Reliability: ${volunteer.reliabilityScore}/100</p>
+          <p class="volunteer-name">${volunteer.name}</p>
+          <p class="volunteer-skills">Skills: ${volunteer.skills.join(', ')}</p>
+          <p class="volunteer-reliability">Reliability: ${volunteer.reliabilityScore}/100</p>
         `;
         volunteersList.appendChild(div);
       });
